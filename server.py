@@ -69,8 +69,10 @@ def handle_dialog(req, res):
                 "Не хочу.",
                 "Не буду.",
                 "Отстань!",
-            ]
+            ],
+            'animal': 'Слона'
         }
+
         # Заполняем текст ответа
         res['response']['text'] = 'Привет! Купи слона!'
         # Получим подсказки
@@ -87,15 +89,18 @@ def handle_dialog(req, res):
     # Подумайте, всё ли в этом фрагменте написано "красиво"?
     for satisfy in ['ладно', 'куплю', 'покупаю', 'хорошо']:
         if satisfy in req['request']['original_utterance'].lower():
+            if sessionStorage[user_id]['animal'] == 'Слона':
+                # Пользователь согласился, прощаемся.
+                res['response']['text'] = 'Слона можно найти на Яндекс.Маркете!'
+                sessionStorage[user_id]['animal'] = 'Кролика'
+            else:
+                res['response']['text'] = 'Кролика можно найти на Яндекс.Маркете!'
+                res['response']['end_session'] = True
+                return
 
-            # Пользователь согласился, прощаемся.
-            res['response']['text'] = 'Слона можно найти на Яндекс.Маркете!'
-            res['response']['end_session'] = True
-            return
-
-    # Если нет, то убеждаем его купить слона!
+    # Если нет, то убеждаем его купить слона / кролика!
     res['response']['text'] = \
-        f"Все говорят '{req['request']['original_utterance']}', а ты купи слона!"
+        f"Все говорят '{req['request']['original_utterance']}', а ты купи {sessionStorage[user_id]['animal']}!"
     res['response']['buttons'] = get_suggests(user_id)
 
 
@@ -118,7 +123,7 @@ def get_suggests(user_id):
     if len(suggests) < 2:
         suggests.append({
             "title": "Ладно",
-            "url": "https://market.yandex.ru/search?text=слон",
+            "url": f"https://market.yandex.ru/search?text={sessionStorage[user_id]['animal']}",
             "hide": True
         })
 
